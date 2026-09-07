@@ -1,44 +1,71 @@
 # KG-Kernel
 
-KG-Kernel is a graph-native, self-describing meta-model for building domain-specific ontologies. It defines the small set of foundational node and relation types you need in order to describe *any* domain, then lets that domain's own classes and instance data live in the same knowledge graph — governed, traceable, and queryable together instead of scattered across separate docs, spreadsheets, and code comments.
+KG-Kernel is a self-explaining, graph-based semantic kernel for building networks of reusable, application-specific ontologies and the knowledge graphs they govern. It defines the fundamental constructs for describing knowledge — not a universal model of everything — so an application can explicitly model the domain semantics that actually matter to it, reusing and combining ontology modules at whatever depth it needs, while relying on general-purpose knowledge everywhere else. The resulting ontology network becomes a persistent semantic frame of reference: something an LLM can interpret, retrieve against, construct from, and be checked against — instead of inventing its own schema and meaning, differently, every time.
 
-"Self-describing" is literal, not a slogan: every meta-class in [kg-kernel.cypher](kg-kernel.cypher) carries its own `text` property explaining what it means and what question it answers. The kernel documents itself inside the graph rather than in a wiki that drifts out of sync with it.
+"Self-explaining" is literal, not a slogan: every meta-class in [kg-kernel.cypher](kg-kernel.cypher) carries its own `text` property explaining what it means and what question it answers, right there in the graph. Concepts, relations, properties, and patterns are all first-class graph elements — nodes you can query and inspect, not names buried in a separate schema file.
 
-## Why a kernel at all?
+## Design principles
+
+- **Graph-based** — the kernel, every ontology module, and all instance data live in one graph, not in isolated schemas or documents.
+- **A kernel, not a universal ontology** — KG-Kernel defines the mechanisms for describing knowledge; it does not try to describe the whole world, and no application built on it needs to either.
+- **Domain-independent, application-oriented** — the kernel has no built-in bias toward Built Asset Management, Finance, Healthcare, or any other domain. The point is working applications, not ontology engineering for its own sake.
+- **Explicit where it matters, silent elsewhere** — model precisely the semantics that need application-level agreement; delegate everything else to general knowledge. The boundary of what's explicit is a design decision the application owner makes, not something the kernel dictates.
+- **A network, not a hierarchy, of arbitrary depth** — ontology modules reuse, specialize, and depend on one another freely. A simple application might use one ontology module above its instances; another might stack many interconnected ones. Nothing caps the depth or forces a tree.
+- **A semantic control plane for LLMs** — a durable, governed structure an LLM can be grounded in across interactions, applications, and datasets, rather than a prompt-scoped instruction that's rebuilt (and reinvented) every time.
+
+## Why a kernel, not another schema
 
 Knowledge graphs built by loosely extracting entities and relations — from documents, from an LLM, from ad-hoc scripts — tend to become **spaghetti graphs**: every source invents its own labels, the same real-world thing shows up under three different names, and nothing constrains what can connect to what. They're hard to query with confidence and impossible to explain to a newcomer.
 
-KG-Kernel's answer is to fix a small, stable **meta-ontology** up front — the rules for what counts as a "thing," a "relation," or a "property" — so that every domain built on top of it is governed and self-consistent by construction, instead of governed after the fact by cleanup.
+KG-Kernel's answer is to fix a small, stable set of constructs up front — the rules for what counts as a "thing," a "relation," or a "property" — so that everything built on top is governed and self-consistent by construction, instead of governed after the fact by cleanup. That matters more, not less, now that LLMs are often the ones doing the extracting:
 
-## The three layers
+> The interesting question isn't "Can an LLM build a knowledge graph?" It's "Can a stable, reusable ontology network act as the semantic control plane that lets an LLM reliably build and maintain instance graphs?"
 
-KG-Kernel assumes and enables a three-layer architecture. Each layer is a set of nodes and relations in the *same* graph, kept distinct by layer-specific labels, with explicit cross-layer relationships (like `ONTOLOGY_HAS_TYPE` and `INSTANCE_OF`) linking them:
+## The ontology network
 
-| Layer | Answers | Example labels |
+KG-Kernel splits knowledge modeling into three concerns, kept in the *same* graph and distinguished by layer-specific labels plus explicit cross-layer relationships (like `ONTOLOGY_HAS_TYPE` and `INSTANCE_OF`):
+
+| Concern | Answers | Cardinality |
 |---|---|---|
-| **1. Meta Ontology** (this repo) | What is a "thing" or "relation," in general, for *any* domain? | `Ontology`, `Ontology_Entity`, `Ontology_Relation`, `Ontology_Property` |
-| **2. Domain Ontology** | What kinds of things and connections matter *in this domain*? | e.g. `Requirement`, `Asset`, `SATISFIES` for an assurance domain |
-| **3. Domain Instances** | What actually exists, right now, in the real world? | e.g. a specific requirement, a specific certificate |
+| **The kernel** (this repo) | What is a "thing," a "relation," a "property," in general, for *any* domain? | Exactly one — shared by everything built on it |
+| **Ontology modules** | What kinds of things, connections, and rules matter *for this application or domain*? | Any number, at any depth, reusing and depending on one another |
+| **Instances** | What actually exists, or happened, in a particular application's data? | Whatever the application observes |
 
-This separation matters because it splits knowledge modeling into two distinct, sequential phases: first describe the domain in general — the types of things and relations that matter — as a Domain Ontology; then populate real Domain Instances against that description. **KG-Kernel itself only defines layer 1** — the rules for building and maintaining a Domain Ontology. What any particular domain ontology actually contains (assurance, construction, biology, anything) is out of scope for the kernel; that's the next layer's job.
+In the simplest case this looks like the familiar meta/domain/instance split: one ontology module sitting above the instances. But the kernel doesn't assume that shape — an application can chain several ontology modules together (a shared core, specialized by an industry module, specialized again by a company-specific one), and different applications can pick different depths. The fundamental structure is a **reuse network**, not a fixed stack: a concept gets defined once, at the right level of abstraction, and downstream ontology modules build on it rather than redefining it.
 
-## Multiple domains, one graph
+## Explicit where it matters
 
-Because layer 2 is "a domain ontology" rather than "the domain ontology," a single graph built on KG-Kernel can hold several domain ontologies side by side, each tagged back to the meta layer via `Ontology_Domain`. They don't need to be merged into one master schema to coexist — they just need to share the same layer-1 rules for what an entity, relation, and property are. That shared foundation is what makes it possible to traverse *across* domains with the same query patterns you'd use *within* one, instead of needing a bespoke integration per pair of domains.
+KG-Kernel is deliberately not trying to model everything. An application decides, on its own terms, which concepts need a precise, agreed, explicit definition in the graph — and lets an LLM's general knowledge fill in the rest. If ambiguity around a concept wouldn't materially affect the application, it doesn't need a node.
 
-A more professional example: a construction project isn't one domain, it's several overlaid on the same set of physical things. A single wall might be described from an **aesthetics** domain (finish, color), a **materials** domain (concrete grade, supplier), a **safety** domain (fire rating, hazard controls), and an **assurance** domain (which requirement it satisfies, what evidence certifies it) — all as separate domain ontologies, all pointing at the same underlying entity in the graph. A traversal like "show me everything connected to this wall" then naturally surfaces its finish, its material spec, its fire rating, and its certification in one pass, because every domain was built on the same layer-1 vocabulary of entities, relations, and properties rather than four incompatible schemas bolted together after the fact.
+This also means an ontology network can start small. An application can launch with a minimal core — just the concepts it actually needs to agree on today — and add ontology modules later only when a real business need shows up, rather than front-loading a complete domain model before anything ships.
+
+## One core, many domains
+
+Because an ontology module is *an* ontology, not *the* ontology, a single graph built on KG-Kernel can hold several of them side by side — and, since it's a network rather than a hierarchy, several ontology modules can each depend on the same shared sub-module instead of each reinventing it. They don't need to be merged into one master schema to coexist; they just need to share the kernel's rules for what an entity, relation, and property are. That shared foundation is what makes it possible to traverse *across* domains with the same query patterns you'd use *within* one.
+
+A professional example: a construction project isn't one domain, it's several overlaid on the same physical things. A single wall might be described by an **aesthetics** ontology module (finish, color), a **materials** module (concrete grade, supplier), a **safety** module (fire rating, hazard controls), and an **assurance** module (which requirement it satisfies, what evidence certifies it) — each possibly reusing a common "Physical Asset" module underneath rather than modeling the wall from scratch. All four point at the same entity in the graph. A traversal like "show me everything connected to this wall" then naturally surfaces its finish, material spec, fire rating, and certification in one pass, because every module was built on the same kernel vocabulary instead of four incompatible schemas bolted together after the fact.
 
 ## A simple example
 
 Imagine you're building a guide to a zoo.
 
-- **Meta Ontology** is the rulebook that says: *"A zoo guide is made of animals, the places they live, and the connections between them — like which animal lives where."* It doesn't mention lions or cages at all. It would work equally well for a guide to a school, a kitchen, or a football team.
-- **Domain Ontology** is what you get when you apply that rulebook to zoos specifically: you decide the animal kingdom domain needs a class called `Animal`, a class called `Habitat`, and a relation called `LIVES_IN` connecting them.
-- **Domain Instances** are the actual entries in your finished guide: `Leo` (an instance of `Animal`) `LIVES_IN` `Savannah Exhibit` (an instance of `Habitat`).
+- **The kernel** is the rulebook that says: *"A guide is made of things, the places they exist, and the connections between them — like which thing lives where."* It doesn't mention lions or cages at all. It would work equally well for a guide to a school, a kitchen, or a football team.
+- **An ontology module** is what you get when you apply that rulebook to zoos specifically: you decide the animal-kingdom module needs a class called `Animal`, a class called `Habitat`, and a relation called `LIVES_IN` connecting them.
+- **Instances** are the actual entries in your finished guide: `Leo` (an instance of `Animal`) `LIVES_IN` `Savannah Exhibit` (an instance of `Habitat`).
 
-Notice each layer only needs the layer below it to make sense: you can't have "Leo lives in the Savannah Exhibit" without first deciding that "animals" and "living in a place" are things worth describing — and you can't decide that without first agreeing, in general, that a guide is made of things and connections between things. That's exactly the `Ontology_Entity` → `Ontology_Relation` distinction the kernel fixes at layer 1, so every domain ontology built on it — zoos or otherwise — reuses the same rulebook.
+Nothing stops a separate `Farm` ontology module, built independently by someone else, from reusing the same `Animal` and `Habitat` concepts instead of redefining them — that reuse is what turns one ontology into a network of ontologies. And notice each concern only needs the one below it to make sense: you can't have "Leo lives in the Savannah Exhibit" without first deciding that "animals" and "living in a place" are things worth describing — and you can't decide that without first agreeing, in general, that a guide is made of things and connections between things. That general agreement is exactly what the kernel fixes once, for every ontology module built on it.
 
-## What's in the meta-ontology
+## Grounding LLMs in a stable semantic model
+
+Left alone, an LLM asked to extract or generate knowledge has to invent a schema and a set of meanings on the fly — and it will invent them slightly differently each time, which is exactly how spaghetti graphs happen at scale. KG-Kernel is designed to be interpreted by an LLM as a persistent semantic context instead:
+
+- **Retrieval-oriented** — ontology semantics point retrieval toward the concepts, relations, and properties actually relevant to the application, rather than a generic similarity search.
+- **Ambiguity reduction** — where a domain-specific meaning has been made explicit in an ontology module, the LLM doesn't have to guess at it from general-purpose training data.
+- **Ontology-governed instance construction** — instance data is created and maintained according to definitions the ontology network has already established, so an LLM extracting instances is filling in a known shape rather than drafting one.
+- **Validation and governance** — the same ontology network gives you a basis for checking whether constructed instance knowledge actually conforms to the application's intended semantics.
+- **Persistent semantic context** — unlike instructions embedded in a single prompt, the ontology network is a durable asset, reusable across LLM interactions, applications, and datasets rather than rebuilt each time.
+
+## What's in the kernel
 
 [kg-kernel.cypher](kg-kernel.cypher) currently defines 11 meta-classes and 4 meta-relations, all rooted under a single `Ontology` node (every ontology has exactly one):
 
@@ -53,12 +80,12 @@ Notice each layer only needs the layer below it to make sense: you can't have "L
 | `Ontology_Property` | What attributes may be recorded? |
 | `Ontology_Pattern` | What reusable graph structures exist, and what do they mean? |
 
-One deliberate design choice worth calling out: relations are modeled as `Ontology_Relation` **nodes**, not just Cypher relationship types — even the meta-relations (`ONTOLOGY_HAS_PART`, `ONTOLOGY_HAS_TYPE`, `ONTOLOGY_HAS_PROPERTY`, `IS_SUPERSEDED_BY`) are defined this way. That's what lets a relation carry its own documentation and lifecycle (`created_on` / `superseded_on`) exactly like an entity can, keeping the "self-describing" property consistent across the whole kernel.
+One deliberate design choice worth calling out: relations are modeled as `Ontology_Relation` **nodes**, not just Cypher relationship types — even the meta-relations (`ONTOLOGY_HAS_PART`, `ONTOLOGY_HAS_TYPE`, `ONTOLOGY_HAS_PROPERTY`, `IS_SUPERSEDED_BY`) are defined this way. That's what lets a relation carry its own documentation and lifecycle (`created_on` / `superseded_on`) exactly like an entity can — keeping every ontology element, not just entities, inspectable and self-explaining.
 
 ## Status
 
-Early stage — the kernel currently defines the meta-class vocabulary; domain ontologies and cross-layer relationship patterns are still being built out.
+Early stage — the kernel currently defines the meta-class vocabulary. Ontology-network patterns (module reuse, dependency, mapping/alignment across modules) and the LLM-grounding workflow described above are the current direction, not yet implemented.
 
 ## Related writing
 
-More background and worked examples on this approach are on the author's blog at [nedev.digital](https://nedev.digital), including the [Assurance Knowledge Platform Ontology Architecture Specification](https://nedev.digital/blog/posts/ontology-architecture), which applies this same three-layer pattern to a real domain.
+More background and worked examples on this approach are on the author's blog at [nedev.digital](https://nedev.digital), including the [Assurance Knowledge Platform Ontology Architecture Specification](https://nedev.digital/blog/posts/ontology-architecture), which applies an ontology-network pattern to a real domain.
