@@ -4,14 +4,22 @@ KG-Kernel is a self-explaining, graph-based semantic kernel for building network
 
 "Self-explaining" is literal, not a slogan: every meta-class in [kg-kernel.cypher](kg-kernel.cypher) carries its own `text` property explaining what it means and what question it answers, right there in the graph. Concepts, relations, properties, and patterns are all first-class graph elements — nodes you can query and inspect, not names buried in a separate schema file.
 
+## Aim
+
+KG-Kernel exists to provide a persistent, reusable semantic control plane between an application and an LLM: a machine-readable ontology network that explicitly captures the application-specific meaning that must remain stable, while allowing the LLM to supply general knowledge outside that boundary.
+
 ## Design principles
 
-- **Graph-based** — the kernel, every ontology module, and all instance data live in one graph, not in isolated schemas or documents.
-- **A kernel, not a universal ontology** — KG-Kernel defines the mechanisms for describing knowledge; it does not try to describe the whole world, and no application built on it needs to either.
-- **Domain-independent, application-oriented** — the kernel has no built-in bias toward Built Asset Management, Finance, Healthcare, or any other domain. The point is working applications, not ontology engineering for its own sake.
-- **Explicit where it matters, silent elsewhere** — model precisely the semantics that need application-level agreement; delegate everything else to general knowledge. The boundary of what's explicit is a design decision the application owner makes, not something the kernel dictates.
-- **A network, not a hierarchy, of arbitrary depth** — ontology modules reuse, specialize, and depend on one another freely. A simple application might use one ontology module above its instances; another might stack many interconnected ones. Nothing caps the depth or forces a tree.
-- **A semantic control plane for LLMs** — a durable, governed structure an LLM can be grounded in across interactions, applications, and datasets, rather than a prompt-scoped instruction that's rebuilt (and reinvented) every time.
+1. **Graph-based** — the kernel, every ontology module, and all instance data live in one graph, not in isolated schemas or documents.
+2. **Self-explaining** — concepts, relations, properties, and patterns carry their own descriptions as graph nodes, inspectable in place rather than documented separately.
+3. **Semantic kernel, not universal ontology** — KG-Kernel defines the mechanisms for describing knowledge; it does not try to describe the whole world, and no application built on it needs to either.
+4. **Domain-independent** — the kernel has no built-in bias toward Built Asset Management, Finance, Healthcare, or any other domain.
+5. **Application-oriented** — the point is working applications and the knowledge graphs they need, not ontology engineering for its own sake.
+6. **Reusable ontology network** — ontology modules reuse and depend on one another instead of each being modeled from scratch; a concept is defined once, at the right level of abstraction, and built on by everything downstream.
+7. **Variable-depth semantic structure** — a simple application might use one ontology module above its instances; another might stack many interconnected ones. Nothing caps the depth or forces a tree.
+8. **Explicit modeling of application-critical knowledge** — model precisely the semantics that need application-level agreement; delegate everything else to general knowledge. Where that boundary sits is a design decision the application owner makes, not something the kernel dictates.
+9. **Ontology-governed instance layer** — instance data is created and maintained according to definitions the ontology network has already established, not invented ad hoc at data-entry time.
+10. **Semantic grounding and governance for LLMs** — a durable, governed structure an LLM can be grounded in across interactions, applications, and datasets, rather than a prompt-scoped instruction that's rebuilt — and reinvented — every time.
 
 ## Why a kernel, not another schema
 
@@ -84,7 +92,9 @@ One deliberate design choice worth calling out: relations are modeled as `Ontolo
 
 ## Status
 
-Early stage — the kernel currently defines the meta-class vocabulary. Ontology-network patterns (module reuse, dependency, mapping/alignment across modules) and the LLM-grounding workflow described above are the current direction, not yet implemented.
+Just starting. The kernel currently defines the meta-class vocabulary; ontology-network patterns (module reuse, dependency, mapping/alignment across modules) and the LLM-grounding workflow described above are the current direction, not yet implemented.
+
+The project aims to prove a hypothesis: that an LLM operating against a persistent, self-explaining ontology network can construct, retrieve, and maintain application knowledge more accurately, consistently, and explainably than an LLM operating with prompts, documents, vector retrieval, or an ordinary application schema alone.
 
 ## Related writing
 
