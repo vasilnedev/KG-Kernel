@@ -94,7 +94,7 @@ One deliberate design choice worth calling out: relations are modeled as `Ontolo
 
 Just starting. The kernel currently defines the meta-class vocabulary; ontology-network patterns (module reuse, dependency, mapping/alignment across modules) and the LLM-grounding workflow described above are the current direction, not yet implemented.
 
-The project aims to prove a hypothesis: that an LLM operating against a persistent, self-explaining ontology network can construct, retrieve, and maintain application knowledge more accurately, consistently, and explainably than an LLM operating with prompts, documents, vector retrieval, or an ordinary application schema alone.
+KG-Kernel explores whether a persistent, self-explaining ontology network can turn probabilistic LLM-assisted knowledge extraction into human-verifiable application knowledge, from which deterministic decisions can be derived.
 
 ## Related writing
 
