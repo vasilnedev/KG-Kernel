@@ -6,7 +6,7 @@ KG-Kernel is a self-explaining, graph-based semantic kernel for building network
 
 ## Aim
 
-KG-Kernel exists to provide a persistent, reusable semantic control plane between an application and an LLM: a machine-readable ontology network that explicitly captures the application-specific meaning that must remain stable, while allowing the LLM to supply general knowledge outside that boundary.
+KG-Kernel exists to provide a persistent, reusable semantic control plane between an application and an LLM: a machine-readable ontology network that explicitly captures the application-specific meaning that must remain stable, while allowing the LLM to supply general knowledge outside that boundary. The result should be a **human-verifiable knowledge graph** — one a person can inspect and trust the meaning of — as opposed to a ["spaghetti graph"](https://nedev.digital/blog/posts/ontology-architecture), where ungoverned extraction leaves labels ambiguous and inconsistent.
 
 ## Design principles
 
