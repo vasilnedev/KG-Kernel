@@ -1,6 +1,6 @@
 # KG-Kernel
 
-KG-Kernel is a self-explaining, graph-based semantic kernel for building networks of reusable, application-specific ontologies and the knowledge graphs they govern. It defines the fundamental constructs for describing knowledge — not a universal model of everything — so an application can explicitly model the domain semantics that actually matter to it, reusing and combining ontology modules at whatever depth it needs, while relying on general-purpose knowledge everywhere else. The resulting ontology network becomes a persistent semantic frame of reference: something an LLM can interpret, retrieve against, construct from, and be checked against — instead of inventing its own schema and meaning, differently, every time.
+KG-Kernel is a self-explaining, graph-based semantic kernel for building networks of reusable, application-specific ontologies and the knowledge graphs they govern. It defines the fundamental constructs for describing the knowledge necessary for an application — not a universal model of everything — so an application can explicitly model the domain semantics that actually matter to it, reusing and combining ontology modules at whatever depth it needs, while relying on general-purpose knowledge everywhere else. The resulting ontology network becomes a persistent semantic frame of reference: something an LLM can interpret, retrieve against, construct from, and be checked against — instead of inventing its own schema and meaning, differently, every time.
 
 "Self-explaining" is literal, not a slogan: every meta-class in [kg-kernel.cypher](kg-kernel.cypher) carries its own `text` property explaining what it means and what question it answers, right there in the graph. Concepts, relations, properties, and patterns are all first-class graph elements — nodes you can query and inspect, not names buried in a separate schema file.
 
@@ -23,11 +23,37 @@ KG-Kernel exists to provide a persistent, reusable semantic control plane betwee
 
 ## Why a kernel, not another schema
 
-Knowledge graphs built by loosely extracting entities and relations — from documents, from an LLM, from ad-hoc scripts — tend to become **spaghetti graphs**: every source invents its own labels, the same real-world thing shows up under three different names, and nothing constrains what can connect to what. They're hard to query with confidence and impossible to explain to a newcomer.
+Knowledge graphs built by loosely extracting entities and relations — from documents, from an LLM, from ad-hoc scripts — tend to become **spaghetti graphs**: every source invents its own labels, the same real-world thing shows up under three different names, and nothing constrains what can connect to what. They're hard to query with confidence and impossible for a human to verify.
 
 KG-Kernel's answer is to fix a small, stable set of constructs up front — the rules for what counts as a "thing," a "relation," or a "property" — so that everything built on top is governed and self-consistent by construction, instead of governed after the fact by cleanup. That matters more, not less, now that LLMs are often the ones doing the extracting:
 
-> The interesting question isn't "Can an LLM build a knowledge graph?" It's "Can a stable, reusable ontology network act as the semantic control plane that lets an LLM reliably build and maintain instance graphs?"
+> The question to address isn't "Can an LLM build a knowledge graph?" It's "Can a stable, reusable ontology network act as the semantic control plane that lets an LLM reliably build and maintain instance graphs?"
+
+## KG-Kernel as a complex system
+
+This is the same problem restated in complex-systems terms: a knowledge graph built without governance tends toward chaos, and that's not a failure of effort — it's the natural behavior of a complex system without shared rules.
+
+KG-Kernel takes the opposite approach. It is a core system that defines how smaller systems (ontology modules) are created and how they connect into a larger one. Rather than imposing a master schema, it provides the minimal generative rules — the vocabulary of entities, relations, properties, lifecycles, processes, and states — by which diverse ontology modules can emerge and interoperate within a single graph.
+
+This is what complex systems theory calls ordered emergence: the capacity for specialized knowledge domains to coexist, interact, and be traversed as a unified whole, without requiring a central authority to dictate their contents. Each ontology module is autonomous in what it describes, yet governed by the same foundational rules in how it describes it. The result is not a monolithic schema but a federation of ontology modules that share a common grammar.
+
+## The three universal aspects
+
+For any domain to be fully describable, three aspects must be present in the kernel itself — not left to individual ontology modules to invent independently:
+
+### Lifecycle
+
+Things do not exist in a vacuum of time. They come into being, pass through stages, and are superseded or retired. `Ontology_Lifecycle` and `Ontology_Lifecycle_Stage` capture this universal dimension, ensuring every domain can express when things happen and in what order, using a shared vocabulary.
+
+### Process
+
+Things are not static. They are created, transformed, inspected, approved, and consumed through activities. `Ontology_Process` and `Ontology_Process_Activity` capture this, providing a common language for how change occurs — whether in a zoo (an animal is born, matures, is transferred) or an assurance network (a requirement is drafted, reviewed, approved, implemented).
+
+### State
+
+At any given moment, a thing is in a particular condition or configuration. That condition determines what relations are valid, what properties are required, and what transitions are permitted. `Ontology_States` defines the set of conditions a kind of thing can be in, and `Ontology_Current_State` captures a specific thing's condition as a first-class concept — not merely a property value, but a constraint on what can be true of an entity right now.
+
+These three aspects — lifecycle, process, and state — are intentionally part of the core rather than left to ontology modules. They are as universal as entity, relation, and property. Without them, every domain would reinvent its own conventions for time, change, and condition, and cross-domain traversal would break down precisely where it matters most: understanding what is true, what happened, and what is possible.
 
 ## The ontology network
 
@@ -75,14 +101,15 @@ Left alone, an LLM asked to extract or generate knowledge has to invent a schema
 
 ## What's in the kernel
 
-[kg-kernel.cypher](kg-kernel.cypher) currently defines 11 meta-classes and 4 meta-relations, all rooted under a single `Ontology` node (every ontology has exactly one):
+[kg-kernel.cypher](kg-kernel.cypher) currently defines 13 meta-classes and 4 meta-relations, all rooted under a single `Ontology` node (every ontology has exactly one):
 
 | Meta-class | Answers |
 |---|---|
-| `Ontology_Domain` | Which discipline or subject matter does this belong to? |
-| `Ontology_Concept` | What does this mean? |
+| `Ontology_Domain` | Which discipline or subject matter does this ontology belong to? |
+| `Ontology_Concept` | What does something mean, in the context of this ontology? |
 | `Ontology_Lifecycle` / `Ontology_Lifecycle_Stage` | In what time-related stages do events occur? |
-| `Ontology_Process` / `Ontology_Process_Activity` | How are things created? |
+| `Ontology_Process` / `Ontology_Process_Activity` | How are things created, and how do they interact with their environment? |
+| `Ontology_States` / `Ontology_Current_State` | What states can things be in, and what state are they in right now? |
 | `Ontology_Entity` | What exists? |
 | `Ontology_Relation` | How may things connect? |
 | `Ontology_Property` | What attributes may be recorded? |

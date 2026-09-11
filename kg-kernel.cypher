@@ -57,6 +57,20 @@ MERGE (process_activity:Ontology_Process_Activity {
     superseded_on: null
 });
 
+MERGE (states:Ontology_States {
+    label: "Ontology_States",
+    text: "Desctibes a set of states that a thing can be in. Question answered: What state somthing can be in to?",
+    created_on: "2026-08-26",
+    superseded_on: null
+});
+
+MERGE (current_state:Ontology_Current_State {
+    label: "Ontology_Current_State",
+    text: "Represents a current state a thing is currently in. Question answered: What is the current state of something?",
+    created_on: "2026-08-26",
+    superseded_on: null
+});
+
 MERGE (entity:Ontology_Entity {
     label: "Ontology_Entity",
     text: "Represents things that exist. Thi are the main building blocks of knowledge. Question answered: What exists?",
