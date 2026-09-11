@@ -123,6 +123,8 @@ Just starting. The kernel currently defines the meta-class vocabulary; ontology-
 
 KG-Kernel explores whether a persistent, self-explaining ontology network can turn probabilistic LLM-assisted knowledge extraction into human-verifiable application knowledge, from which deterministic decisions can be derived.
 
+That hypothesis is an engineering claim, not a philosophical one: it stands or falls on whether LLM-constructed instance graphs are demonstrably more accurate, consistent, and explainable when grounded in the kernel — not on the elegance of the ontology itself.
+
 ## Related writing
 
 More background and worked examples on this approach are on the author's blog at [nedev.digital](https://nedev.digital), including the [Assurance Knowledge Platform Ontology Architecture Specification](https://nedev.digital/blog/posts/ontology-architecture), which applies an ontology-network pattern to a real domain.
