@@ -47,23 +47,36 @@ Things do not exist in a vacuum of time. They come into being, pass through stag
 
 ### Process
 
-Things are not static. They are created, transformed, inspected, approved, and consumed through activities. `Ontology_Process` and `Ontology_Process_Activity` capture this, providing a common language for how change occurs — whether in a zoo (an animal is born, matures, is transferred) or an assurance network (a requirement is drafted, reviewed, approved, implemented).
+Things are not static. They are created, transformed, inspected, approved, and consumed through activities. `Ontology_Process` and `Ontology_Process_Activity` capture this, providing a common language for how change occurs — whether in a zoo (an can be transferred) or an assurance network (a decision can be recorded).
 
 ### State
 
-At any given moment, a thing is in a particular condition or configuration. That condition determines what relations are valid, what properties are required, and what transitions are permitted. `Ontology_States` defines the set of conditions a kind of thing can be in, and `Ontology_Current_State` captures a specific thing's condition as a first-class concept — not merely a property value, but a constraint on what can be true of an entity right now.
+At any given moment, a thing can be in a particular condition or configuration. That condition determines what relations are valid, what properties are required, and what transitions are permitted. `Ontology_State_Set` defines the set of conditions a kind of thing can be in, and `Ontology_State` captures a specific thing's condition as a first-class concept — not merely a property value, but a constraint on what can be true of an entity right now.
+
+### A human-life example
+
+Consider a human being. The three aspects describe different dimensions of the same person:
+
+* **Lifecycle:** birth → child → adolescent → adult → elderly. This describes where the person is in the progression of their life.
+* **State:** healthy, ill, married, unmarried, etc. These describe conditions that can change while the person remains in the same lifecycle stage.
+* **Process:** education, graduation, employment, promotion, retirement, etc. These describe activities and transitions through which the person's situation changes — for example, graduating from university or progressing from a junior to a senior position.
+
+The distinction is important. A person can be an adult, married, healthy, and a senior engineer at the same time. Their lifecycle, state, and participation in processes are related, but they are not the same thing. A change in one dimension does not necessarily imply a change in the others.
 
 These three aspects — lifecycle, process, and state — are intentionally part of the core rather than left to ontology modules. They are as universal as entity, relation, and property. Without them, every domain would reinvent its own conventions for time, change, and condition, and cross-domain traversal would break down precisely where it matters most: understanding what is true, what happened, and what is possible.
 
+
 ## The ontology network
 
-KG-Kernel splits knowledge modeling into three concerns, kept in the *same* graph and distinguished by layer-specific labels plus explicit cross-layer relationships (like `ONTOLOGY_HAS_TYPE` and `INSTANCE_OF`):
+KG-Kernel splits knowledge modeling into three concerns, kept in the *same* graph and distinguished by layer-specific labels plus explicit cross-layer relationships (like `IS_INSTANCE_OF`):
 
 | Concern | Answers | Cardinality |
 |---|---|---|
 | **The kernel** (this repo) | What is a "thing," a "relation," a "property," in general, for *any* domain? | Exactly one — shared by everything built on it |
 | **Ontology modules** | What kinds of things, connections, and rules matter *for this application or domain*? | Any number, at any depth, reusing and depending on one another |
 | **Instances** | What actually exists, or happened, in a particular application's data? | Whatever the application observes |
+
+Every meta-class label the kernel defines carries an `Ontology` / `Ontology_` prefix (`Ontology`, `Ontology_Entity`, `Ontology_Relation`, `Ontology_Property_Set`, and so on), so the label alone tells you you're looking at kernel vocabulary — a definition, not a fact about the world — rather than a Data Layer label an application's own instances would carry.
 
 In the simplest case this looks like the familiar meta/domain/instance split: one ontology module sitting above the instances. But the kernel doesn't assume that shape — an application can chain several ontology modules together (a shared core, specialized by an industry module, specialized again by a company-specific one), and different applications can pick different depths. The fundamental structure is a **reuse network**, not a fixed stack: a concept gets defined once, at the right level of abstraction, and downstream ontology modules build on it rather than redefining it.
 
@@ -101,7 +114,7 @@ Left alone, an LLM asked to extract or generate knowledge has to invent a schema
 
 ## What's in the kernel
 
-[kg-kernel.cypher](kg-kernel.cypher) currently defines 13 meta-classes and 4 meta-relations, all rooted under a single `Ontology` node (every ontology has exactly one):
+[kg-kernel.cypher](kg-kernel.cypher) currently defines 13 meta-classes and 6 meta-relations, all rooted under a single `Ontology` node (every ontology has exactly one):
 
 | Meta-class | Answers |
 |---|---|
@@ -109,13 +122,13 @@ Left alone, an LLM asked to extract or generate knowledge has to invent a schema
 | `Ontology_Concept` | What does something mean, in the context of this ontology? |
 | `Ontology_Lifecycle` / `Ontology_Lifecycle_Stage` | In what time-related stages do events occur? |
 | `Ontology_Process` / `Ontology_Process_Activity` | How are things created, and how do they interact with their environment? |
-| `Ontology_States` / `Ontology_Current_State` | What states can things be in, and what state are they in right now? |
+| `Ontology_State_Set` / `Ontology_State` | What states can things be in, and what state are they in right now? |
 | `Ontology_Entity` | What exists? |
 | `Ontology_Relation` | How may things connect? |
-| `Ontology_Property` | What attributes may be recorded? |
+| `Ontology_Property_Set` / `Ontology_Property` | What attributes may be recorded? |
 | `Ontology_Pattern` | What reusable graph structures exist, and what do they mean? |
 
-One deliberate design choice worth calling out: relations are modeled as `Ontology_Relation` **nodes**, not just Cypher relationship types — even the meta-relations (`ONTOLOGY_HAS_PART`, `ONTOLOGY_HAS_TYPE`, `ONTOLOGY_HAS_PROPERTY`, `IS_SUPERSEDED_BY`) are defined this way. That's what lets a relation carry its own documentation and lifecycle (`created_on` / `superseded_on`) exactly like an entity can — keeping every ontology element, not just entities, inspectable and self-explaining.
+One deliberate design choice worth calling out: relations are modeled as `Ontology_Relation` **nodes**, not just Cypher relationship types — even the meta-relations (`ONTOLOGY_HAS_PART`, `ONTOLOGY_HAS_TYPE`, `ONTOLOGY_HAS_INSTANCE`, `HAS_PROPERTY`, `IS_SUPERSEDED_BY`, `IS_INSTANCE_OF`) are defined this way. That's what lets a relation carry its own documentation and be marked superseded via `IS_SUPERSEDED_BY`, exactly like an entity can — keeping every ontology element, not just entities, inspectable and self-explaining.
 
 ## Status
 
