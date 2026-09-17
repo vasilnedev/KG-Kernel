@@ -68,7 +68,7 @@ These three aspects — lifecycle, process, and state — are intentionally part
 
 ## The ontology network
 
-KG-Kernel splits knowledge modeling into three concerns, kept in the *same* graph and distinguished by layer-specific labels plus explicit cross-layer relationships (like `IS_INSTANCE_OF`):
+KG-Kernel splits knowledge modeling into three concerns, kept in the *same* graph and distinguished by layer-specific labels plus explicit cross-layer relationships (like `ENTITY_HAS_INSTANCE`):
 
 | Concern | Answers | Cardinality |
 |---|---|---|
@@ -128,11 +128,15 @@ Left alone, an LLM asked to extract or generate knowledge has to invent a schema
 | `Ontology_Property_Set` / `Ontology_Property` | What attributes may be recorded? |
 | `Ontology_Pattern` | What reusable graph structures exist, and what do they mean? |
 
-One deliberate design choice worth calling out: relations are modeled as `Ontology_Relation` **nodes**, not just Cypher relationship types — even the meta-relations (`ONTOLOGY_HAS_PART`, `ONTOLOGY_HAS_TYPE`, `ONTOLOGY_HAS_INSTANCE`, `HAS_PROPERTY`, `IS_SUPERSEDED_BY`, `IS_INSTANCE_OF`) are defined this way. That's what lets a relation carry its own documentation and be marked superseded via `IS_SUPERSEDED_BY`, exactly like an entity can — keeping every ontology element, not just entities, inspectable and self-explaining.
+One deliberate design choice worth calling out: relations are modeled as `Ontology_Relation` **nodes**, not just Cypher relationship types — even the meta-relations (`ONTOLOGY_HAS_PART`, `ONTOLOGY_HAS_TYPE`, `ONTOLOGY_HAS_INSTANCE`, `HAS_PROPERTY`, `IS_SUPERSEDED_BY`, `ENTITY_HAS_INSTANCE`) are defined this way. That's what lets a relation carry its own documentation and be marked superseded via `IS_SUPERSEDED_BY` — timestamped by a `date` property assigned through `HAS_PROPERTY`, the one place in the kernel a date is currently needed — exactly like an entity can, keeping every ontology element, not just entities, inspectable and self-explaining.
+
+Instantiation is split by layer rather than handled by one catch-all relation. `ONTOLOGY_HAS_INSTANCE` marks a concrete value within the Semantic Layer itself — a specific lifecycle stage, a specific relation, a specific property. `ENTITY_HAS_INSTANCE` is the one relation allowed to cross from the Semantic Layer into the Data Layer, and only from an `Ontology_Entity` node — reflecting that Data Layer instances are things that exist, not relations or properties in their own right. Instantiation is also implied, not always explicit: a property that's a member of a property set inherits its instance status from the set's own `ONTOLOGY_HAS_INSTANCE` edge via `ONTOLOGY_HAS_PART`, rather than repeating the instantiation edge for every member. That's a general rule, not a special case for properties: wherever a node is reachable via `ONTOLOGY_HAS_PART` from a node that's already instantiated, its instance status is derived, not restated. One `ONTOLOGY_HAS_INSTANCE` edge at the root of a part-whole tree is enough to certify everything beneath it — connectivity does the work, so instantiation doesn't need to be re-asserted at every leaf just to keep the graph traversable.
+
+Not every illustration needs a node, either. Where an example is informative but not something the domain-independent kernel itself should model (KG-Kernel's own purpose, in the `Ontology` node's `text`; a zoo-domain walkthrough, in an `Ontology_Pattern` instance's `text`), it's written as a "For this instance:" note inside a `text` property instead of becoming graph structure — illustration stays cheap without pulling a domain into the kernel.
 
 ## Status
 
-Just starting. The kernel currently defines the meta-class vocabulary; ontology-network patterns (module reuse, dependency, mapping/alignment across modules) and the LLM-grounding workflow described above are the current direction, not yet implemented.
+Just starting. The kernel currently defines the meta-class vocabulary, plus a handful of illustrative `Ontology_Pattern` instances covering entity instantiation, entity-to-entity relations, and taxonomy/mereology. Fuller ontology-network patterns (module reuse, dependency, mapping/alignment across modules) and the LLM-grounding workflow described above are the current direction, not yet implemented.
 
 KG-Kernel explores whether a persistent, self-explaining ontology network can turn probabilistic LLM-assisted knowledge extraction into human-verifiable application knowledge, from which deterministic decisions can be derived.
 
