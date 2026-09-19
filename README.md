@@ -10,14 +10,22 @@ KG-Kernel exists to provide a persistent, reusable semantic control plane betwee
 
 ## Design principles
 
+### Foundation
+
 1. **Graph-based** — the kernel, every ontology module, and all instance data live in one graph, not in isolated schemas or documents.
 2. **Self-explaining** — concepts, relations, properties, and patterns carry their own descriptions as graph nodes, inspectable in place rather than documented separately.
 3. **Semantic kernel, not universal ontology** — KG-Kernel defines the mechanisms for describing knowledge; it does not try to describe the whole world, and no application built on it needs to either.
 4. **Domain-independent** — the kernel has no built-in bias toward Built Asset Management, Finance, Healthcare, or any other domain.
+
+### Semantic architecture
+
 5. **Application-oriented** — the point is working applications and the knowledge graphs they need, not ontology engineering for its own sake.
 6. **Reusable ontology network** — ontology modules reuse and depend on one another instead of each being modeled from scratch; a concept is defined once, at the right level of abstraction, and built on by everything downstream.
 7. **Variable-depth semantic structure** — a simple application might use one ontology module above its instances; another might stack many interconnected ones. Nothing caps the depth or forces a tree.
 8. **Explicit modeling of application-critical knowledge** — model precisely the semantics that need application-level agreement; delegate everything else to general knowledge. Where that boundary sits is a design decision the application owner makes, not something the kernel dictates.
+
+### Runtime / AI boundary
+
 9. **Ontology-governed instance layer** — instance data is created and maintained according to definitions the ontology network has already established, not invented ad hoc at data-entry time.
 10. **Semantic grounding and governance for LLMs** — a durable, governed structure an LLM can be grounded in across interactions, applications, and datasets, rather than a prompt-scoped instruction that's rebuilt — and reinvented — every time.
 
@@ -140,7 +148,20 @@ Just starting. The kernel currently defines the meta-class vocabulary, plus a ha
 
 KG-Kernel explores whether a persistent, self-explaining ontology network can turn probabilistic LLM-assisted knowledge extraction into human-verifiable application knowledge, from which deterministic decisions can be derived.
 
-That hypothesis is an engineering claim, not a philosophical one: it stands or falls on whether LLM-constructed instance graphs are demonstrably more accurate, consistent, and explainable when grounded in the kernel — not on the elegance of the ontology itself.
+That hypothesis is an engineering claim, not a philosophical one, and it splits into two separately testable questions:
+
+1. **Semantic/technical hypothesis** — does an explicit, reusable, self-explaining semantic layer provide measurable benefits beyond a graph database and vector search alone?
+2. **Assurance/governance hypothesis** — does the kernel's human-verifiable knowledge graph make AI-assisted application knowledge easier to inspect, challenge, trace, and govern?
+
+### Next steps: testing the hypotheses
+
+Neither question is meant to be settled by argument — the plan is to measure it:
+
+- **Baseline vs. kernel-grounded extraction**, for the semantic/technical hypothesis: run the same LLM extraction task over the same source documents twice — once against a graph database with vector search only, once grounded in a KG-Kernel ontology module — and score both against a hand-verified ground truth for accuracy, entity/label consistency across runs, and whether errors trace back to a specific missing or misapplied definition.
+- **Human review under both conditions**, for the assurance/governance hypothesis: give reviewers instance graphs produced under each condition and measure time-to-verify, error-detection rate, and whether they can answer "why does this exist, and what rule permits it" by tracing back into the ontology.
+- **Repeat across at least two unrelated domains**, so a measured benefit isn't an artifact of one domain's structure — consistent with the kernel's own domain-independence principle.
+
+Until that's run, both hypotheses stay open, not demonstrated.
 
 ## Related writing
 
