@@ -51,15 +51,15 @@ For any domain to be fully describable, three aspects must be present in the ker
 
 ### Lifecycle
 
-Things do not exist in a vacuum of time. They come into being, pass through stages, and are superseded or retired. `Ontology_Lifecycle` and `Ontology_Lifecycle_Stage` capture this universal dimension, ensuring every domain can express when things happen and in what order, using a shared vocabulary.
+Things do not exist in a vacuum of time. They come into being, pass through stages, and are superseded or retired. `Semantic_Lifecycle` and `Semantic_Lifecycle_Stage` capture this universal dimension, ensuring every domain can express when things happen and in what order, using a shared vocabulary.
 
 ### Process
 
-Things are not static. They are created, transformed, inspected, approved, and consumed through activities. `Ontology_Process` and `Ontology_Process_Activity` capture this, providing a common language for how change occurs — whether in a zoo (an can be transferred) or an assurance network (a decision can be recorded).
+Things are not static. They are created, transformed, inspected, approved, and consumed through activities. `Semantic_Process` and `Semantic_Process_Activity` capture this, providing a common language for how change occurs — whether in a zoo (an can be transferred) or an assurance network (a decision can be recorded).
 
 ### State
 
-At any given moment, a thing can be in a particular condition or configuration. That condition determines what relations are valid, what properties are required, and what transitions are permitted. `Ontology_State_Set` defines the set of conditions a kind of thing can be in, and `Ontology_State` captures a specific thing's condition as a first-class concept — not merely a property value, but a constraint on what can be true of an entity right now.
+At any given moment, a thing can be in a particular condition or configuration. That condition determines what relations are valid, what properties are required, and what transitions are permitted. `Semantic_State_Set` defines the set of conditions a kind of thing can be in, and `Semantic_State` captures a specific thing's condition as a first-class concept — not merely a property value, but a constraint on what can be true of an entity right now.
 
 ### A human-life example
 
@@ -84,7 +84,7 @@ KG-Kernel splits knowledge modeling into three concerns, kept in the *same* grap
 | **Ontology modules** | What kinds of things, connections, and rules matter *for this application or domain*? | Any number, at any depth, reusing and depending on one another |
 | **Instances** | What actually exists, or happened, in a particular application's data? | Whatever the application observes |
 
-Every meta-class label the kernel defines carries an `Ontology` / `Ontology_` prefix (`Ontology`, `Ontology_Entity`, `Ontology_Relation`, `Ontology_Property_Set`, and so on), so the label alone tells you you're looking at kernel vocabulary — a definition, not a fact about the world — rather than a Data Layer label an application's own instances would carry.
+Every meta-class label the kernel defines carries a `Semantic_` prefix (`Semantic_Entity`, `Semantic_Relation`, `Semantic_Property_Set`, and so on), so the label alone tells you you're looking at kernel vocabulary — a definition, not a fact about the world — rather than a Data Layer label an application's own instances would carry. The bare `Ontology` label is the one exception: it names the concept of being an ontology itself, not just Semantic Layer membership.
 
 In the simplest case this looks like the familiar meta/domain/instance split: one ontology module sitting above the instances. But the kernel doesn't assume that shape — an application can chain several ontology modules together (a shared core, specialized by an industry module, specialized again by a company-specific one), and different applications can pick different depths. The fundamental structure is a **reuse network**, not a fixed stack: a concept gets defined once, at the right level of abstraction, and downstream ontology modules build on it rather than redefining it.
 
@@ -122,29 +122,31 @@ Left alone, an LLM asked to extract or generate knowledge has to invent a schema
 
 ## What's in the kernel
 
-[kg-kernel.cypher](kg-kernel.cypher) currently defines 13 meta-classes and 6 meta-relations, all rooted under a single `Ontology` node (every ontology has exactly one):
+[kg-kernel.cypher](kg-kernel.cypher) currently defines 13 meta-classes and 8 meta-relations, all rooted under a single `Ontology` node (every ontology has exactly one):
 
 | Meta-class | Answers |
 |---|---|
-| `Ontology_Domain` | Which discipline or subject matter does this ontology belong to? |
-| `Ontology_Concept` | What does something mean, in the context of this ontology? |
-| `Ontology_Lifecycle` / `Ontology_Lifecycle_Stage` | In what time-related stages do events occur? |
-| `Ontology_Process` / `Ontology_Process_Activity` | How are things created, and how do they interact with their environment? |
-| `Ontology_State_Set` / `Ontology_State` | What states can things be in, and what state are they in right now? |
-| `Ontology_Entity` | What exists? |
-| `Ontology_Relation` | How may things connect? |
-| `Ontology_Property_Set` / `Ontology_Property` | What attributes may be recorded? |
-| `Ontology_Pattern` | What reusable graph structures exist, and what do they mean? |
+| `Semantic_Domain` | Which discipline or subject matter does this ontology belong to? |
+| `Semantic_Concept` | What does something mean, in the context of this ontology? |
+| `Semantic_Lifecycle` / `Semantic_Lifecycle_Stage` | In what time-related stages do events occur? |
+| `Semantic_Process` / `Semantic_Process_Activity` | How are things created, and how do they interact with their environment? |
+| `Semantic_State_Set` / `Semantic_State` | What states can things be in, and what state are they in right now? |
+| `Semantic_Entity` | What exists? |
+| `Semantic_Relation` | How may things connect? |
+| `Semantic_Property_Set` / `Semantic_Property` | What attributes may be recorded? |
+| `Semantic_Pattern` | What reusable graph structures exist, and what do they mean? |
 
-One deliberate design choice worth calling out: relations are modeled as `Ontology_Relation` **nodes**, not just Cypher relationship types — even the meta-relations (`ONTOLOGY_HAS_PART`, `ONTOLOGY_HAS_TYPE`, `ONTOLOGY_HAS_INSTANCE`, `HAS_PROPERTY`, `IS_SUPERSEDED_BY`, `ENTITY_HAS_INSTANCE`) are defined this way. That's what lets a relation carry its own documentation and be marked superseded via `IS_SUPERSEDED_BY` — timestamped by a `date` property assigned through `HAS_PROPERTY`, the one place in the kernel a date is currently needed — exactly like an entity can, keeping every ontology element, not just entities, inspectable and self-explaining.
+One deliberate design choice worth calling out: relations are modeled as `Semantic_Relation` **nodes**, not just Cypher relationship types — even the meta-relations (`SEMANTIC_HAS_PART`, `SEMANTIC_HAS_TYPE`, `SEMANTIC_HAS_INSTANCE`, `HAS_PROPERTY`, `IS_SUPERSEDED_BY`, `ENTITY_HAS_INSTANCE`, `SEMANTIC_RELATION_START`, `SEMANTIC_RELATION_END`) are defined this way. That's what lets a relation carry its own documentation and be marked superseded via `IS_SUPERSEDED_BY` — timestamped by a `date` property assigned through `HAS_PROPERTY`, the one place in the kernel a date is currently needed — exactly like an entity can, keeping every ontology element, not just entities, inspectable and self-explaining.
 
-Instantiation is split by layer rather than handled by one catch-all relation. `ONTOLOGY_HAS_INSTANCE` marks a concrete value within the Semantic Layer itself — a specific lifecycle stage, a specific relation, a specific property. `ENTITY_HAS_INSTANCE` is the one relation allowed to cross from the Semantic Layer into the Data Layer, and only from an `Ontology_Entity` node — reflecting that Data Layer instances are things that exist, not relations or properties in their own right. Instantiation is also implied, not always explicit: a property that's a member of a property set inherits its instance status from the set's own `ONTOLOGY_HAS_INSTANCE` edge via `ONTOLOGY_HAS_PART`, rather than repeating the instantiation edge for every member. That's a general rule, not a special case for properties: wherever a node is reachable via `ONTOLOGY_HAS_PART` from a node that's already instantiated, its instance status is derived, not restated. One `ONTOLOGY_HAS_INSTANCE` edge at the root of a part-whole tree is enough to certify everything beneath it — connectivity does the work, so instantiation doesn't need to be re-asserted at every leaf just to keep the graph traversable.
+`Semantic_Relation`'s own rule — that it must be linked to exactly two `Semantic_Entity` nodes — is formalized by `SEMANTIC_RELATION_START` and `SEMANTIC_RELATION_END`, pointing from a relation instance to the entity it starts from and the entity it ends at, respectively. Keeping the two ends distinct rather than a single symmetric "connects to" edge matters for asymmetric relations like `LIVES_IN`, where which side is the animal and which is the habitat isn't interchangeable.
 
-Not every illustration needs a node, either. Where an example is informative but not something the domain-independent kernel itself should model (KG-Kernel's own purpose, in the `Ontology` node's `text`; a zoo-domain walkthrough, in an `Ontology_Pattern` instance's `text`), it's written as a "For this instance:" note inside a `text` property instead of becoming graph structure — illustration stays cheap without pulling a domain into the kernel.
+Instantiation is split by layer rather than handled by one catch-all relation. `SEMANTIC_HAS_INSTANCE` marks a concrete value within the Semantic Layer itself — a specific lifecycle stage, a specific relation, a specific property. `ENTITY_HAS_INSTANCE` is the one relation allowed to cross from the Semantic Layer into the Data Layer, and only from a `Semantic_Entity` node — reflecting that Data Layer instances are things that exist, not relations or properties in their own right. Instantiation is also implied, not always explicit: a property that's a member of a property set inherits its instance status from the set's own `SEMANTIC_HAS_INSTANCE` edge via `SEMANTIC_HAS_PART`, rather than repeating the instantiation edge for every member. That's a general rule, not a special case for properties: wherever a node is reachable via `SEMANTIC_HAS_PART` from a node that's already instantiated, its instance status is derived, not restated. One `SEMANTIC_HAS_INSTANCE` edge at the root of a part-whole tree is enough to certify everything beneath it — connectivity does the work, so instantiation doesn't need to be re-asserted at every leaf just to keep the graph traversable.
+
+Not every illustration needs a node, either. Where an example is informative but not something the domain-independent kernel itself should model (KG-Kernel's own purpose, in the `Ontology` node's `text`; a zoo-domain walkthrough, in a `Semantic_Pattern` instance's `text`), it's written as a "For this instance:" note inside a `text` property instead of becoming graph structure — illustration stays cheap without pulling a domain into the kernel.
 
 ## Status
 
-Just starting. The kernel currently defines the meta-class vocabulary, plus a handful of illustrative `Ontology_Pattern` instances covering entity instantiation, entity-to-entity relations, and taxonomy/mereology. Fuller ontology-network patterns (module reuse, dependency, mapping/alignment across modules) and the LLM-grounding workflow described above are the current direction, not yet implemented.
+Just starting. The kernel currently defines the meta-class vocabulary, plus a handful of illustrative `Semantic_Pattern` instances covering entity instantiation, entity-to-entity relations, and taxonomy/mereology. Fuller ontology-network patterns (module reuse, dependency, mapping/alignment across modules) and the LLM-grounding workflow described above are the current direction, not yet implemented.
 
 KG-Kernel explores whether a persistent, self-explaining ontology network can turn probabilistic LLM-assisted knowledge extraction into human-verifiable application knowledge, from which deterministic decisions can be derived.
 
@@ -157,9 +159,26 @@ That hypothesis is an engineering claim, not a philosophical one, and it splits 
 
 Neither question is meant to be settled by argument — the plan is to measure it:
 
-- **Baseline vs. kernel-grounded extraction**, for the semantic/technical hypothesis: run the same LLM extraction task over the same source documents twice — once against a graph database with vector search only, once grounded in a KG-Kernel ontology module — and score both against a hand-verified ground truth for accuracy, entity/label consistency across runs, and whether errors trace back to a specific missing or misapplied definition.
+- **Three parallel scenarios on the same documents**, for the semantic/technical hypothesis: (a) embeddings and a vector index only, no semantic layer; (b) embeddings plus an LLM-extracted semantic layer built from a predefined but generic schema — the "spaghetti graph" case, schema-constrained but not self-explaining or governed; (c) embeddings plus the KG-Kernel semantic layer. The schema in (b) and the ontology module in (c) are both human-verified, so what's actually being compared is a governed, self-explaining ontology network against a generic one — not "some schema" against none.
 - **Human review under both conditions**, for the assurance/governance hypothesis: give reviewers instance graphs produced under each condition and measure time-to-verify, error-detection rate, and whether they can answer "why does this exist, and what rule permits it" by tracing back into the ontology.
 - **Repeat across at least two unrelated domains**, so a measured benefit isn't an artifact of one domain's structure — consistent with the kernel's own domain-independence principle.
+
+### Test environment
+
+A chat application fans the same user prompt out to all three scenarios at once, each running its own retrieval workflow against its own Neo4j database:
+
+- **(a)** is plain vector similarity search over chunk embeddings — no Cypher generation, since there's no schema to query against.
+- **(b)** and **(c)** add a graph-expansion step from those same vector-retrieved seeds: an LLM-generated Cypher query, scoped to that scenario's own schema, pulls in connected structured facts before the combined context and the user's query go to the LLM for the final answer.
+
+[Neo4j's `neo4j-graphrag-python`](https://github.com/neo4j/neo4j-graphrag-python) package covers most of this out of the box: `SimpleKGPipeline` with a predefined schema for building (b)'s semantic layer, `VectorRetriever` and `Text2CypherRetriever` for retrieval across all three, and `GraphRAG` for the final context-plus-query-to-answer step.
+
+Evaluation is qualitative, not scored against a fixed ground truth: the same prompts are run across all three threads, the full transcripts are saved, and the three answers are compared side by side and judged on which best matches the asker's actual intent. That's a subjective call, not a metric — the goal at this stage is a working, repeatable comparison to build intuition from, not a publishable benchmark.
+
+Sources on the retrieval components above:
+- [User Guide: Knowledge Graph Builder — neo4j-graphrag-python documentation](https://neo4j.com/docs/neo4j-graphrag-python/current/user_guide_kg_builder.html)
+- [neo4j_graphrag.retrievers.text2cypher — neo4j-graphrag-python documentation](https://neo4j.com/docs/neo4j-graphrag-python/current/_modules/neo4j_graphrag/retrievers/text2cypher.html)
+- [GitHub - neo4j/neo4j-graphrag-python](https://github.com/neo4j/neo4j-graphrag-python)
+- [Neo4j GraphRAG Python Package - Developer Guides](https://neo4j.com/developer/genai-ecosystem/graphrag-python/)
 
 Until that's run, both hypotheses stay open, not demonstrated.
 
