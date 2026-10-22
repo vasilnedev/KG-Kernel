@@ -152,16 +152,26 @@ KG-Kernel explores whether a persistent, self-explaining ontology network can tu
 
 That hypothesis is an engineering claim, not a philosophical one, and it splits into two separately testable questions:
 
-1. **Semantic/technical hypothesis** — does an explicit, reusable, self-explaining semantic layer provide measurable benefits beyond a graph database and vector search alone?
-2. **Assurance/governance hypothesis** — does the kernel's human-verifiable knowledge graph make AI-assisted application knowledge easier to inspect, challenge, trace, and govern?
+1. **Semantic/technical hypothesis** — Does a governed, self-explaining ontology network supply context to a retrieval-augmented application that is measurably more precise and more consistent than (a) vector retrieval alone or (b) a generic, schema-constrained extraction graph?
+2. **Assurance/governance hypothesis** — Does the ontology network's provenance and self-explanation let a human verifier trace a retrieved fact back to the rule that permits it, faster and more accurately than under the generic-schema condition?
 
 ### Next steps: testing the hypotheses
 
+**Scope of this test.** These experiments evaluate KG-Kernel as a component of a retrieval-augmented application — a system that combines a language model with retrieval, context assembly, and application logic to answer a user's question. The scenarios below compare three ways of supplying context to the same application. They do not test autonomous, multi-step behaviour in which a system sets its own goals, chooses tools, and iterates toward an outcome; that is future work.
+
 Neither question is meant to be settled by argument — the plan is to measure it:
 
-- **Three parallel scenarios on the same documents**, for the semantic/technical hypothesis: (a) embeddings and a vector index only, no semantic layer; (b) embeddings plus an LLM-extracted semantic layer built from a predefined but generic schema — the "spaghetti graph" case, schema-constrained but not self-explaining or governed; (c) embeddings plus the KG-Kernel semantic layer. The schema in (b) and the ontology module in (c) are both human-verified, so what's actually being compared is a governed, self-explaining ontology network against a generic one — not "some schema" against none.
-- **Human review under both conditions**, for the assurance/governance hypothesis: give reviewers instance graphs produced under each condition and measure time-to-verify, error-detection rate, and whether they can answer "why does this exist, and what rule permits it" by tracing back into the ontology.
+- **Three parallel scenarios on the same documents**, for the semantic/technical hypothesis: 
+(a) Vector-only retrieval — the minimal retrieval-augmented application: embeddings, similarity search, context, answer. No structured retrieval.
+(b) Generic-schema graph RAG — a retrieval-augmented application with an LLM-extracted, human-verified but generic schema; the graph is schema-constrained but not self-explaining or governed.
+(c) KG-Kernel graph RAG — a retrieval-augmented application with a governed, self-explaining ontology network; retrieval is guided by ontology semantics and facts are traceable to their permitting rules.
+The (b) vs. (c) contrast is the core test: both use a human-verified schema and graph-expansion retrieval, so any measured difference isolates the effect of governance and self-explanation — not the presence of a graph.
+
+- **Human verification (the assurance test).** For a sample of retrieved facts under (b) and (c), reviewers are asked: What is this? Why does it exist here? What rule permits this relation or property? We record time-to-verify, error-detection rate, and — critically — whether the reviewer can trace the fact to a permitting rule in the graph versus having to consult external documentation. Condition (c) should make this trace a single traversal; condition (b) should require reconstruction.
+
 - **Repeat across at least two unrelated domains**, so a measured benefit isn't an artifact of one domain's structure — consistent with the kernel's own domain-independence principle.
+
+**Out of scope for this round.** These scenarios test context supply to a single-turn retrieval application. They do not test: multi-step, self-directed retrieval in which a system decides what to fetch next; write-back of verified facts by an automated process; or cross-application reuse of the ontology network. Those are natural extensions once the comparison below establishes a baseline.
 
 ### Test environment
 
@@ -169,6 +179,8 @@ A chat application fans the same user prompt out to all three scenarios at once,
 
 - **(a)** is plain vector similarity search over chunk embeddings — no Cypher generation, since there's no schema to query against.
 - **(b)** and **(c)** add a graph-expansion step from those same vector-retrieved seeds: an LLM-generated Cypher query, scoped to that scenario's own schema, pulls in connected structured facts before the combined context and the user's query go to the LLM for the final answer.
+
+All three scenarios share the same chat application shell and the same final-answer prompt, so the only variable is the retrieval and context path.
 
 [Neo4j's `neo4j-graphrag-python`](https://github.com/neo4j/neo4j-graphrag-python) package covers most of this out of the box: `SimpleKGPipeline` with a predefined schema for building (b)'s semantic layer, `VectorRetriever` and `Text2CypherRetriever` for retrieval across all three, and `GraphRAG` for the final context-plus-query-to-answer step.
 
